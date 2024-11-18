@@ -104,8 +104,10 @@ async function initializeAudioVisualizer() {
 function saveApiKey() {
     const apiKey = apiKeyInput.value.trim();
     if (apiKey) {
-        localStorage.setItem('geminiApiKey', apiKey);
+        const encryptedKey = encryptApiKey(apiKey);
+        localStorage.setItem('geminiApiKey', encryptedKey);
         updateStatus('API key saved successfully', 'success');
+        apiKeyInput.value = ''; // Clear the input for security
     } else {
         updateStatus('Please enter a valid API key', 'error');
     }
@@ -186,6 +188,14 @@ async function processTranscription(text) {
     try {
         loadingIndicator.classList.remove('hidden');
         
+        const encryptedKey = localStorage.getItem('geminiApiKey');
+        if (!encryptedKey) {
+            throw new Error('Please save your API key first');
+        }
+
+        const apiKey = decryptApiKey(encryptedKey);
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+
         const prompt = `Please create well-organized, comprehensive notes from the following transcription. 
         Focus only on the important information and ignore any background chatter or irrelevant details.
         Use proper formatting:
@@ -198,11 +208,10 @@ async function processTranscription(text) {
         Here's the transcription:
         ${text}`;
 
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': ''
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 contents: [{
@@ -212,6 +221,14 @@ async function processTranscription(text) {
                 }]
             })
         });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+                errorData.error?.message || 
+                `HTTP error! status: ${response.status}`
+            );
+        }
 
         const data = await response.json();
         
@@ -240,9 +257,9 @@ async function processTranscription(text) {
         }
     } catch (error) {
         console.error('Error processing with Gemini:', error);
-        updateStatus('Error processing with Gemini API', 'error');
+        updateStatus('Error: ' + error.message, 'error');
         formattedNotes.innerHTML = `<div style="color: var(--error-color);">
-            Error processing text. Please try again.
+            ${error.message}. Please check your API key and try again.
         </div>`;
     } finally {
         loadingIndicator.classList.add('hidden');
@@ -272,4 +289,15 @@ function updateTimer() {
     const minutes = elapsedTime.getMinutes().toString().padStart(2, '0');
     const seconds = elapsedTime.getSeconds().toString().padStart(2, '0');
     recordingTimer.textContent = `${minutes}:${seconds}`;
+}
+
+// Add these encryption functions
+function encryptApiKey(apiKey) {
+    // Simple encryption for demo (not secure for production)
+    return btoa(apiKey.split('').reverse().join(''));
+}
+
+function decryptApiKey(encryptedKey) {
+    // Simple decryption for demo (not secure for production)
+    return atob(encryptedKey).split('').reverse().join('');
 }
