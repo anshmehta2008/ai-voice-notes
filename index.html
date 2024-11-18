@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Notes Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <div class="container">
+        <header>
+            <h1>AI Voice Notes Assistant</h1>
+            <div class="api-key-section">
+                <input type="password" id="apiKeyInput" placeholder="Enter your Gemini API key">
+                <button id="saveApiKey">Save Key</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="recording-section">
+                <div class="microphone-container">
+                    <button id="startRecording" class="recording-btn">
+                        <i class="fas fa-microphone"></i>
+                        <span>Start Listening</span>
+                    </button>
+                    <div class="waveform-container">
+                        <div id="recordingTimer" class="recording-timer">00:00</div>
+                        <div class="waveform-visualizer" id="waveform"></div>
+                    </div>
+                </div>
+
+                <div class="transcription-container">
+                    <h2>Real-time Transcription</h2>
+                    <div id="liveTranscription" class="transcription-text"></div>
+                </div>
+            </section>
+
+            <section class="notes-section">
+                <div class="loading-indicator hidden">
+                    <div class="spinner"></div>
+                    <p>Processing with Gemini AI...</p>
+                </div>
+
+                <div class="notes-container">
+                    <h2>Formatted Notes</h2>
+                    <div id="formattedNotes" class="notes-content"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Status: <span id="status">Ready</span></p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
